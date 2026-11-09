@@ -2,7 +2,7 @@ name: astrbot_plugin_doc_reader # 插件唯一识别名，以 astrbot_plugin_ �
 display_name: 文档解析助手 # 用于展示的名字，方便阅读
 desc: 接收并解析 docx / xlsx / pptx / pdf 等文档，多文档持久记忆，直接聊天即可总结与问答，适配飞书(lark)等平台。
 short_desc: 让机器人读懂并记住你发来的 docx / xlsx / pptx / pdf 文档。
-version: v1.1.0
+version: v1.2.0
 author: sfjiw # 作者
 repo: https://github.com/sfjiw666/mc_doc_reader
 support_platforms:

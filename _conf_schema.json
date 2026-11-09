@@ -5,7 +5,12 @@
     "default": false
   },
   "inject_to_llm": {
-    "description": "解析后把文档正文注入对话上下文，普通聊天即可直接询问文档内容（无需 /doc 指令）。关闭后仅 /doc 总结、/doc 提问 会使用文档。",
+    "description": "解析后把文档正文注入 system_prompt，普通聊天即可直接询问文档内容（无需 /doc 指令）。关闭后仅 /doc 总结、/doc 提问 会使用文档。",
+    "type": "bool",
+    "default": true
+  },
+  "inject_to_prompt": {
+    "description": "同时把文档正文追加到用户消息末尾（防其他插件覆写 system_prompt 导致文档上下文丢失；若担心对话历史变大可关闭）",
     "type": "bool",
     "default": true
   },

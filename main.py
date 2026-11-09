@@ -70,6 +70,7 @@ INJECT_MARKER = "<doc_reader_doc_context>"
 DEFAULTS = {
     "auto_summary": False,
     "inject_to_llm": True,
+    "inject_to_prompt": True,
     "send_preview": True,
     "preview_chars": 1200,
     "max_chars": 60000,
@@ -103,7 +104,7 @@ class DocSession:
     "astrbot_plugin_doc_reader",
     "sfjiw",
     "接收并解析 docx / xlsx / pptx / pdf 等文档，多文档持久记忆，支持 AI 总结与文档问答",
-    "1.1.0",
+    "1.2.0",
 )
 class DocReaderPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig = None):
@@ -583,33 +584,52 @@ class DocReaderPlugin(Star):
     async def on_llm_request(
         self, event: AstrMessageEvent, req: ProviderRequest
     ) -> None:
-        """LLM 请求前，把会话记住的全部文档正文注入 system_prompt。
+        """LLM 请求前，把会话记住的全部文档正文注入请求。
 
-        这样用户发送文档后，直接用日常聊天提问（如「刚才那份报告的重点是什么」），
-        模型也能看到文档内容，而不必使用 /doc 提问。
+        双通道注入：
+        - system_prompt：常规做法，不打扰用户消息；
+        - req.prompt（用户消息末尾追加）：防御其他插件（如同样挂载请求钩子的
+          office_assistant 类插件）在本钩子之后覆写 system_prompt，导致文档
+          上下文丢失。用户消息体一般不会被整体替换，可保证模型一定能看到。
         """
         try:
-            if not self._get("inject_to_llm"):
-                return
             docs = self._sessions.get(event.unified_msg_origin) or []
             if not docs:
                 return
-            base = req.system_prompt or ""
-            if INJECT_MARKER in base:
-                return
             body = self._combined_doc_text(event.unified_msg_origin)
             names = "、".join(d.name for d in docs)
-            req.system_prompt = (
-                f"{base}\n{INJECT_MARKER}\n"
-                f"用户在当前会话发送过 {len(docs)} 份文档（{names}），"
-                f"以下是提取出的正文。当用户的问题与这些文档相关时，"
-                f"请依据此内容回答；超长文档可能被截断：\n\n{body}\n"
-            ).strip()
-            # info 级：在日志中确认注入确实发生（排查「机器人不记得文档」时先看这里）
-            logger.info(
-                f"[doc_reader] 已为 LLM 请求注入文档上下文：{len(docs)} 份，"
-                f"共 {len(body)} 字符"
-            )
+            channels = []
+
+            # 通道 1：system_prompt
+            if self._get("inject_to_llm"):
+                base = req.system_prompt or ""
+                if INJECT_MARKER not in base:
+                    req.system_prompt = (
+                        f"{base}\n{INJECT_MARKER}\n"
+                        f"用户在当前会话发送过 {len(docs)} 份文档（{names}），"
+                        f"以下是提取出的正文。当用户的问题与这些文档相关时，"
+                        f"请依据此内容回答；超长文档可能被截断：\n\n{body}\n"
+                    ).strip()
+                    channels.append("system_prompt")
+
+            # 通道 2：追加到用户消息末尾（防其他插件覆写 system_prompt）
+            if self._get("inject_to_prompt"):
+                prompt = getattr(req, "prompt", None) or ""
+                if INJECT_MARKER not in prompt:
+                    req.prompt = (
+                        f"{prompt}\n\n{INJECT_MARKER}\n"
+                        f"[文档上下文] 用户此前发送过 {len(docs)} 份文档（{names}），"
+                        f"以下是提取出的正文，回答相关问题时请以此为准，"
+                        f"不要再要求用户重新发送文件：\n\n{body}"
+                    )
+                    channels.append("prompt")
+
+            if channels:
+                # info 级：在日志中确认注入确实发生（排查「机器人不记得文档」时先看这里）
+                logger.info(
+                    f"[doc_reader] 已为 LLM 请求注入文档上下文：{len(docs)} 份，"
+                    f"共 {len(body)} 字符（通道：{' + '.join(channels)}）"
+                )
         except Exception as e:
             logger.warning(f"[doc_reader] 注入文档上下文失败: {e}")
 
