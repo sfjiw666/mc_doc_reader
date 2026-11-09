@@ -6,12 +6,16 @@ AstrBot 文档解析助手 —— 让机器人读懂你发来的文档。
 机器人会自动下载并提取正文内容，回复解析统计与内容预览，并支持基于文档的
 **AI 总结** 与 **文档问答**。
 
+> **开发商**：梦创　|　**QQ 交流群**：167017318
+
 > 本插件基于 [AstrBot](https://github.com/AstrBotDevs/AstrBot) 插件模板
 > [helloworld](https://github.com/Soulter/helloworld) 开发，文档解析使用了
 > python-docx、openpyxl、python-pptx、pypdf 等开源库。
 
 # Supports
 
+- 开发商：梦创
+- QQ 交流群：167017318（使用问题、功能建议欢迎进群交流）
 - [AstrBot Repo](https://github.com/AstrBotDevs/AstrBot)
 - [AstrBot Plugin Development Docs (Chinese)](https://docs.astrbot.app/dev/star/plugin-new.html)
 
