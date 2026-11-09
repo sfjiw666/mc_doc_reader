@@ -1,0 +1,77 @@
+{
+  "auto_summary": {
+    "description": "收到文档后自动调用 AI 总结（需要已配置 LLM 提供商）",
+    "type": "bool",
+    "default": false
+  },
+  "inject_to_llm": {
+    "description": "解析后把文档正文注入对话上下文，普通聊天即可直接询问文档内容（无需 /doc 指令）。关闭后仅 /doc 总结、/doc 提问 会使用文档。",
+    "type": "bool",
+    "default": true
+  },
+  "send_preview": {
+    "description": "解析完成后在回复中附带内容预览",
+    "type": "bool",
+    "default": true
+  },
+  "preview_chars": {
+    "description": "回复中内容预览的最大字符数",
+    "type": "int",
+    "default": 1200
+  },
+  "max_chars": {
+    "description": "提取正文的最大字符数，超出部分截断",
+    "type": "int",
+    "default": 60000
+  },
+  "llm_max_chars": {
+    "description": "发送给 AI 的文档内容最大字符数（超长会省略中间部分）",
+    "type": "int",
+    "default": 30000
+  },
+  "max_docs_per_session": {
+    "description": "每个会话最多记住的文档数量（多份文档同时注入对话上下文，超出淘汰最旧的；记忆持久化，重启后保留）",
+    "type": "int",
+    "default": 3
+  },
+  "max_file_mb": {
+    "description": "允许处理的文件大小上限（MB）",
+    "type": "int",
+    "default": 30
+  },
+  "max_sheets": {
+    "description": "xlsx 最多读取的工作表数量",
+    "type": "int",
+    "default": 10
+  },
+  "max_rows_per_sheet": {
+    "description": "xlsx 每个工作表最多读取的行数",
+    "type": "int",
+    "default": 200
+  },
+  "max_pages": {
+    "description": "pdf 最多读取的页数",
+    "type": "int",
+    "default": 100
+  },
+  "max_slides": {
+    "description": "pptx 最多读取的幻灯片页数",
+    "type": "int",
+    "default": 100
+  },
+  "hint_legacy": {
+    "description": "收到 doc / xls / ppt 旧版格式时提示用户另存为新格式",
+    "type": "bool",
+    "default": true
+  },
+  "only_wake_in_group": {
+    "description": "群聊中仅在 @机器人 或唤醒词触发时才解析文件",
+    "type": "bool",
+    "default": false
+  },
+  "summary_prompt": {
+    "description": "AI 总结文档时使用的提示词",
+    "type": "text",
+    "default": "请用中文总结以下文档的主要内容：先给出一段总体概述，再分点列出关键信息，语言简洁准确。"
+  }
+}
